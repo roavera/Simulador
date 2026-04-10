@@ -17,6 +17,7 @@ KTS_TO_METERS_PER_SEC = 0.514444    # 1 nudo = 0.514444 m/s
 
 # Matriz K (Hay que modificarla, la calculo con matlab)
 # PRUEBO CON UN EJEMPLO 
+# Estado: [u, v, w, p, q, r, phi, theta, psi, x, y, z]
 
 K = np.array([
     [0, 0, 2.0, 0, 0, 0, 0, 0, 0, 0, 0, 1.5],   # collective
@@ -25,40 +26,9 @@ K = np.array([
     [0, 0, 0, 0, 0, 1.0, 0, 0, 1.5, 0, 0, 0]    # yaw
 ])
 
-# Waypoint
-
-"""Carga los puntos de trayectoria desde el archivo""" 
-def _load_flight_path(self):
-    csv_file = 'trajectories/sabe_saez.csv'
-    
-    if not os.path.exists(csv_file):
-        raise FileNotFoundError(f"No se encontró el archivo de trayectoria: {csv_file}")
-
-    points = []
-
-    def safe_float(value):
-        try:
-            return float(value)
-        except ValueError:
-            logging.warning(f"Valor no numérico encontrado en CSV: '{value}', se asignará 0.0")
-            return 0.0
-
-    with open(csv_file, 'r', newline='') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            point = {
-                    'altitud': safe_float(row['Altitud (ft)']) * FT_TO_METERS,
-                    'latitud': safe_float(row['Lat']),
-                    'longitud': safe_float(row['Long']),
-                    'airspeed': safe_float(row['Airspeed (kias)']) * KTS_TO_METERS_PER_SEC
-            }
-            points.append(point)
-
-        if not points:
-            raise ValueError("El archivo CSV no contiene datos válidos")
-
-        print(f"Se cargaron {len(points)} puntos de trayectoria desde {csv_file}")
-        return points
+# Parámetros de la aeronave (Bell 407)
+HOVER_HEIGHT_FT = 200   # Altitud de hover en pies
+COLLECTIVE_TRIM = 5.5   # Grados de paso para mantener el hover
 
 # =============================================
 # CONTROLADOR 
@@ -67,6 +37,9 @@ def _load_flight_path(self):
 class LQRController:
     def __init__(self):
         self.client = xpc.XPlaneConnect()
+
+        self.points = self._load_flight_path()
+        self.current_point_index = 0
 
         # Datarefs necesarios para control de estado completo
         self.datarefs = [
@@ -86,6 +59,41 @@ class LQRController:
             'sim/flightmodel/position/longitude',                               # 13: lon
             'sim/cockpit2/engine/actuators/prop_angle_degrees'                  # 14: collective actual
         ]
+
+    # =============================================
+    # Carga de trayectoria desde CSV
+    # ============================================= 
+    def _load_flight_path(self):
+        csv_file = 'trajectories/sabe_saez.csv'
+        
+        if not os.path.exists(csv_file):
+            raise FileNotFoundError(f"No se encontró el archivo de trayectoria: {csv_file}")
+
+        points = []
+
+        def safe_float(value):
+            try:
+                return float(value)
+            except ValueError:
+                logging.warning(f"Valor no numérico encontrado en CSV: '{value}', se asignará 0.0")
+                return 0.0
+
+        with open(csv_file, 'r', newline='') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                point = {
+                        'altitud': safe_float(row['Altitud (ft)']) * FT_TO_METERS,
+                        'latitud': safe_float(row['Lat']),
+                        'longitud': safe_float(row['Long']),
+                        'airspeed': safe_float(row['Airspeed (kias)']) * KTS_TO_METERS_PER_SEC
+                }
+                points.append(point)
+
+            if not points:
+                raise ValueError("El archivo CSV no contiene datos válidos")
+
+            print(f"Se cargaron {len(points)} puntos de trayectoria desde {csv_file}")
+            return points
 
     # =============================================
     # UTILIDADES 
@@ -129,9 +137,9 @@ class LQRController:
         d = self.client.getDREFs(self.datarefs)
 
         # Velocidades (body/local)
-        u = d[5][0]   # vz → forward (aprox)
-        v = d[3][0]   # vx → lateral
-        w = d[4][0]   # vy → vertical
+        u = d[3][0]   # vz → forward (aprox)
+        v = d[4][0]   # vx → lateral
+        w = d[5][0]   # vy → vertical
 
         # Actitud
         theta = math.radians(d[9][0])   # pitch
@@ -166,19 +174,25 @@ class LQRController:
     # REFERENCIA DESDE WAYPOINT
     # =============================================
 
+    # Dado el estado actual, calcula la referencia de control para el siguiente waypoint
     def get_reference(self, lat, lon, x, y, z):
 
-        bearing = self.calculate_bearing(lat, lon, TARGET["lat"], TARGET["lon"])
-        distance = self.calculate_distance(lat, lon, TARGET["lat"], TARGET["lon"])
+        target = self.points[self.current_point_index]
+        
+        # Calcular rumbo y distancia al waypoint actual
+        bearing = self.calculate_bearing(lat, lon, target["latitud"], target["longitud"])
+        distance = self.calculate_distance(lat, lon, target["latitud"], target["longitud"])
 
-        psi_ref = math.radians(bearing)
+        psi_ref = math.radians(bearing) # rumbo hacia el waypoint (en radianes)
+
+        STEP = min (distance, 100) # distancia de referencia a lo largo del rumbo (máximo 100 m)
 
         # proyección simple local
         x_ref = x + distance * math.cos(psi_ref)
         z_ref = z + distance * math.sin(psi_ref)
-        y_ref = TARGET["alt"]
+        y_ref = target["altitud"]
 
-        u_ref = TARGET["speed"]
+        u_ref = target["airspeed"]
         v_ref = 0
         w_ref = 0
 
@@ -189,6 +203,10 @@ class LQRController:
             x_ref, y_ref, z_ref
         ])
 
+        if distance < 20:  # Si estamos cerca del waypoint, avanzar al siguiente
+            if self.current_point_index < len(self.points) - 1:
+                self.current_point_index += 1
+                print(f"Nuevo waypoint: {self.current_point_index} - Lat: {target['latitud']:.6f}, Lon: {target['longitud']:.6f}, Alt: {target['altitud']:.1f} m    , Airspeed: {target['airspeed']:.1f} m/s        ")
         return ref
 
     # =============================================
