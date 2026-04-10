@@ -101,3 +101,7 @@ TimeoutError: timed out
 2026-04-07 11:43:33,326 - INFO - Posición inicial: Lat=-34.554073, Lon=-58.425011, Heading=133.7°
 2026-04-07 11:43:33,326 - INFO - Heading inicial requerido: 121.1°
 2026-04-07 11:43:33,326 - INFO - Heading actual de la aeronave: 133.7°
+2026-04-10 10:13:14,412 - INFO - Controlador Iniciado.
+2026-04-10 10:15:14,641 - INFO - Controlador Iniciado.
+2026-04-10 10:17:22,927 - INFO - Controlador Iniciado.
+2026-04-10 10:23:08,462 - INFO - Controlador Iniciado.
