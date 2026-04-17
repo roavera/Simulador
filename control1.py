@@ -245,7 +245,7 @@ class FlightController:
                 # =========================
                 
                 # Colective (control de altitud)
-                target_altitude = 50                                    # Altitud objetivo (en metros)
+                target_altitude = 100                                    # Altitud objetivo (en metros)
                 collective_output = self.calculate_collective_control(
                     target_altitude,    # Altitud objetivo
                     state.altitude,     # Altitud actual
@@ -258,7 +258,7 @@ class FlightController:
                 # --- PID EXTERNO: genera pitch_deseado ---
 
                 # Control de velocidad (fuera de hover)
-                target_airspeed = 10.0   # m/s — ajustalo según tu misión
+                target_airspeed = 25.0   # Velocidad objetivo (m/s)
                 error_speed = target_airspeed - state.airspeed
                 error_speed = max(-5, min(5, error_speed))   # limitar error
 
