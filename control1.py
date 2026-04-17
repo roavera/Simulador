@@ -252,16 +252,9 @@ class FlightController:
                     state.climb_rate,   # Tasa de ascenso actual
                     state.collective    # Collective actual (ángulo de palas)    
                 )
-
-                # Enviar comando a X-Plane
-                #self.client.sendDREF('sim/cockpit2/engine/actuators/prop_angle_degrees', collective_output)
                 
                 # Pitch
                 # Control de velocidad: nariz arriba para aumentar altitud, nariz abajo para descender
-                # ============================
-                # CONTROL DE PITCH (DOBLE LAZO)
-                # ============================
-
                 # --- PID EXTERNO: genera pitch_deseado ---
 
                 # Control de velocidad (fuera de hover)
@@ -305,20 +298,49 @@ class FlightController:
                 cyclic_pitch = max(-0.7, min(0.7, cyclic_pitch))
 
                 # Roll (estabilidad lateral)
-                self.pid_roll.setpoint = 0
+
+                # 1) Compensación por velocidad lateral (v_lat)
+                # Si el helicóptero se mueve hacia la derecha, necesita inclinarse a la izquierda.
+
+                lat_comp = -0.12 * state._get("v_lat")   
+
+                # 2) Compensación por translational lift (cuando hay velocidad hacia adelante)
+                # A mayor velocidad hacia adelante, más tendencia a inclinarse a la derecha.
+
+                transl_comp = -0.015 * state._get("v_long")
+
+                # 3) Setpoint del PID de roll
+                # El helicóptero no siempre debe estar nivelado.        
+                # A veces necesita un pequeño ángulo para mantenerse estable.                                   
+
+                roll_setpoint = lat_comp + transl_comp
+
+                # Limitar el setpoint a un rango razonable
+                roll_setpoint = max(-5, min(5, roll_setpoint))
+
+                # 4) PID interno de roll
+                self.pid_roll.setpoint = roll_setpoint
                 cyclic_roll = self.pid_roll(state.roll)
 
-                # Yaw (mantener rumbo)
-                target_heading = 0
-                heading_error = target_heading - state.heading
+                # Limitar salida
+                cyclic_roll = max(-0.7, min(0.7, cyclic_roll))
 
+                # Yaw (mantener rumbo)
+                target_heading = 0   # rumbo deseado
+
+                # Calcular error de heading normalizado
+                heading_error = target_heading - state.heading
                 if heading_error > 180:
                     heading_error -= 360
                 elif heading_error < -180:
                     heading_error += 360
 
-                self.pid_yaw.setpoint = 0
-                pedals = self.pid_yaw(heading_error)
+                # El PID debe recibir el heading REAL, no el error
+                self.pid_yaw.setpoint = target_heading
+                pedals = self.pid_yaw(state.heading)
+
+                # Limitar salida
+                pedals = max(-5, min(5, pedals))
                 
                 # =============================================
                 # ENVÍO DE COMANDOS A X-PLANE
@@ -336,7 +358,7 @@ class FlightController:
             logging.info("Conexión con X-Plane cerrada")
 # =============================================
 # EJECUCIÓN PRINCIPAL
-# =============================================
+# =============================================%%
 
 if __name__ == "__main__":
     controller = FlightController()
