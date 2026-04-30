@@ -13,17 +13,17 @@ from XPlaneConnect.Python3.src import xpc
 FT_TO_METERS = 0.3048
 
 # Parámetros de la misión
-TARGET_ALTITUDE = 20.0  # Altura objetivo en metros
-HOVER_DURATION = 20.0   # Tiempo de hover en segundos
-ALTITUDE_TOLERANCE = 0.5  # Tolerancia de altitud en metros
+TARGET_ALTITUDE = 20.0      # Altura objetivo en metros
+HOVER_DURATION = 20.0       # Tiempo de hover en segundos
+ALTITUDE_TOLERANCE = 0.5    # Tolerancia de altitud en metros
 
 # Límites de velocidad
-MAX_VELOCITY_HORIZONTAL = 0#2.0  # m/s - Velocidad horizontal máxima permitida
-MAX_VELOCITY_COMMAND = 0#1.5     # m/s - Comando máximo de velocidad desde control de posición
+MAX_VELOCITY_HORIZONTAL = 0 #2.0  # m/s - Velocidad horizontal máxima permitida
+MAX_VELOCITY_COMMAND = 0    #1.5     # m/s - Comando máximo de velocidad desde control de posición
 
 # Ganancias de control - POSICIÓN (lazo externo)
-KP_POS_Z = 0.15  # Ganancia control posición longitudinal (reducida)
-KP_POS_X = -0.10  # Ganancia control posición lateral (reducida)
+KP_POS_Z = 0.15     # Ganancia control posición longitudinal (reducida)
+KP_POS_X = -0.10    # Ganancia control posición lateral (reducida)
 
 # Ganancias eliminadas - ahora en los PIDs de velocidad
 # Las ganancias de conversión velocidad→ángulo están en los constructores de PID
@@ -35,8 +35,8 @@ EFECT_COLLECTIVE_HOVER = 0.5  # Efecto del collective en yaw
 CROSS_COUPLING = {
     'pitch_to_roll': 0.0,
     'roll_to_pitch': 0.0,
-    'collective_to_pitch': 0.0,#1,
-    'collective_to_roll': 0.0#1
+    'collective_to_pitch': 0.0,
+    'collective_to_roll': 0.0
 }
 
 # Configuración de logging
@@ -54,7 +54,6 @@ logging.basicConfig(
 # =============================================
 
 class HoverTestController:
-
 
     def __init__(self):
         """Inicializa el controlador de hover"""
@@ -89,6 +88,7 @@ class HoverTestController:
         """Inicializa todos los controladores PID"""
         
         # PID para velocidad vertical (climb rate)
+        # Collective
         self.pid_collective = PID(1.0, 0.01, 0.1, setpoint=0)
         self.pid_collective.output_limits = (-2.0, 2.0)
         
@@ -107,6 +107,7 @@ class HoverTestController:
         self.pid_pitch.output_limits = (-10, 10)
         
         # PID para actitud roll (lazo interno)
+    
         self.pid_roll = PID(0.10, 0.0005, 0.01, setpoint=0)
         self.pid_roll.output_limits = (-10, 10)
         
@@ -265,7 +266,9 @@ class HoverTestController:
         """Control de yaw para mantener heading"""
         try:
             pid_output = self.pid_yaw(heading_error)
+            # El efecto del collective en yaw se modela como una ganancia que depende del valor del collective
             collective_normalize = self.normalize(collective)
+            # El efecto del collective en yaw es más pronunciado a valores altos de collective, por eso se multiplica por la ganancia
             collective_effect = collective_normalize * EFECT_COLLECTIVE_HOVER
             yaw_control = pid_output + collective_effect
             return self.saturate(yaw_control, -0.7, 0.7)
@@ -273,22 +276,23 @@ class HoverTestController:
             logging.error(f"Error en control de yaw: {e}")
             return 0.0
 
+    # La matriz de desacoplamiento se puede ajustar para compensar las interacciones entre los controles.
     def apply_decoupling_matrix(self, cyclic_pitch_cmd, cyclic_roll_cmd, collective_change):
         """Aplica matriz de desacoplamiento"""
-        collective_compensation_pitch = collective_change * CROSS_COUPLING['collective_to_pitch']
-        collective_compensation_roll = collective_change * CROSS_COUPLING['collective_to_roll']
+        collective_compensation_pitch = collective_change * CROSS_COUPLING['collective_to_pitch']   # Compensación del collective en pitch
+        collective_compensation_roll = collective_change * CROSS_COUPLING['collective_to_roll']     # Compensación del collective en roll     
         
-        cross_compensation_pitch = cyclic_roll_cmd * CROSS_COUPLING['roll_to_pitch']
-        cross_compensation_roll = cyclic_pitch_cmd * CROSS_COUPLING['pitch_to_roll']
+        cross_compensation_pitch = cyclic_roll_cmd * CROSS_COUPLING['roll_to_pitch']    # Compensación del roll en pitch
+        cross_compensation_roll = cyclic_pitch_cmd * CROSS_COUPLING['pitch_to_roll']    # Compensación del pitch en roll
         
-        pitch_compensated = cyclic_pitch_cmd + collective_compensation_pitch + cross_compensation_pitch
-        roll_compensated = cyclic_roll_cmd + collective_compensation_roll + cross_compensation_roll
+        pitch_compensated = cyclic_pitch_cmd + collective_compensation_pitch + cross_compensation_pitch     # Comando de pitch compensado
+        roll_compensated = cyclic_roll_cmd + collective_compensation_roll + cross_compensation_roll     # Comando de roll compensado
         
         return pitch_compensated, roll_compensated
 
     def transform_controls_to_body_frame(self, control_pitch, control_roll, heading, initial_heading):
         """Transforma comandos del frame de navegación al frame del helicóptero"""
-        heading_diff = math.radians(heading - initial_heading)
+        heading_diff = math.radians(heading - initial_heading)  # Diferencia de heading en radianes
         cos_h = math.cos(heading_diff)
         sin_h = math.sin(heading_diff)
         
@@ -300,14 +304,16 @@ class HoverTestController:
     def run(self):
         """Bucle principal de control"""
         try:
+            
             logging.info("=" * 70)
             logging.info("INICIANDO TEST DE HOVER CON CONTROL EN CASCADA")
             logging.info(f"Objetivo: Subir a {TARGET_ALTITUDE}m y mantener por {HOVER_DURATION}s")
             logging.info("Arquitectura: Posición → Velocidad → Actitud")
             logging.info("=" * 70)
             
+            # Obtener posición inicial y establecer referencia de hover
             self.get_initial_position()
-            self.mission_phase = 'takeoff'
+            self.mission_phase = 'takeoff' 
             
             cycle_count = 0
             last_collective = 0.0
@@ -315,6 +321,7 @@ class HoverTestController:
             
             while self.mission_phase != 'completed':
                 try:
+                    # Calcular dt para control en cascada y evitar problemas de tiempo
                     current_time = time.time()
                     dt = current_time - last_time
                     last_time = current_time

@@ -1,3 +1,5 @@
+# Objetivo: Hover, mantenerse suspendido en el aire en un punto fijo, sin avanzar ni retroceder.
+
 import math
 import time
 import csv
@@ -145,16 +147,6 @@ class FlightController:
             'sim/flightmodel/position/longitude',                               # 13: lon       [grados]
             'sim/cockpit2/engine/actuators/prop_angle_degrees'                  # 14: collective[grados]
         ]
-
-    def reset_simulation(self):
-        self.client.sendDREF("sim/operation/reset_flight", 1)
-        time.sleep(1)
-
-        self.pid_collective.reset()
-        self.pid_pitch.reset()
-        self.pid_roll.reset()
-        self.pid_yaw.reset()
-    print("Simulación reiniciada")
 
     def _initialize_pids(self):
 
