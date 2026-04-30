@@ -28,7 +28,7 @@ class EngineStabilityMonitor:
             "sim/flightmodel/engine/ENGN_FF_",
             "sim/flightmodel2/engines/N1_percent",
             "sim/flightmodel2/engines/N2_percent",
-            "sim/flightmodel2/engines/ITT_deg_cel"
+            "sim/flightmodel2/engines/ITT_deg_C"
         ]
 
         self.keys = ["torque", "rpm", "ff", "n1", "n2", "itt"]
@@ -36,30 +36,19 @@ class EngineStabilityMonitor:
         # =========================
         # BUFFER (ventana móvil)
         # =========================
-        self.window_size = int(5 * self.fs)
+        self.window_size = int(10 * self.fs)
 
         self.buffers = {
             k: deque(maxlen=self.window_size) for k in self.keys
         }
 
-        # =========================
-        # CRITERIOS DE ESTABILIDAD
-        # =========================
-        self.criteria = {
-            "torque": (3.0, True),
-            "rpm":    (1.5, True),
-            "ff":     (5.0, True),
-            "n1":     (2.0, True),
-            "n2":     (2.0, True),
-            "itt":    (20.0, False)
-        }
 
     # =========================
     # CONTROL NEUTRO
     # =========================
     def send_neutral_controls(self):
         self.client.sendCTRL([
-            0.0,  # pitch
+            0.0# pitch
             0.0,  # roll
             0.0,  # yaw
             0.0   # throttle / collective
@@ -70,7 +59,7 @@ class EngineStabilityMonitor:
     # =========================
     def read_data(self):
         values = self.client.getDREFs(self.drefs)
-        values = [v[0] for v in values]
+        #values = [v[1] for v in values]
 
         data = dict(zip(self.keys, values))
 
@@ -113,8 +102,6 @@ class EngineStabilityMonitor:
         log = []
         t0 = time.time()
 
-        print("Iniciando prueba IDLE...")
-
         while time.time() - t0 < duration:
             loop_start = time.time()
 
@@ -123,9 +110,6 @@ class EngineStabilityMonitor:
 
             # leer datos
             data = self.read_data()
-
-            # evaluar estabilidad
-            stable = self.is_stable()
 
             t = time.time() - t0
 
@@ -136,11 +120,10 @@ class EngineStabilityMonitor:
                 data["ff"],
                 data["n1"],
                 data["n2"],
-                data["itt"],
-                stable
+                data["itt"],  
             ])
 
-            print(f"t={t:.2f}s | Stable={stable}")
+            print(f"t={t:.2f}s")
 
             # mantener frecuencia
             elapsed = time.time() - loop_start

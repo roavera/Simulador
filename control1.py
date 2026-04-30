@@ -218,8 +218,6 @@ class FlightController:
         try:
             logging.info("Iniciando controlador de vuelo")
 
-            self.reset_simulation()
-            
             while True:
                 logging.info("\n=== CICLO DE CONTROL ===")
                 

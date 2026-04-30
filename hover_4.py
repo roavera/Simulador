@@ -121,7 +121,8 @@ class HoverTestController:
     def _setup_datarefs(self):
         """Configura los datarefs necesarios"""
         self.datarefs = [
-            'sim/flightmodel/position/y_agl',                    # 0: altitud AGL
+            'sim/flightmodel/position/y_agl',                    
+            # 0: altitud AGL
             'sim/cockpit2/gauges/indicators/heading_electric_deg_mag_pilot', # 1: heading
             'sim/flightmodel/position/local_vx',                   # 2: velocidad lateral
             'sim/flightmodel/position/local_vy',                   # 3: climb rate
