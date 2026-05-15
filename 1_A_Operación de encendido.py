@@ -5,6 +5,9 @@ import time
 import csv
 from XPlaneConnect.Python3.src import xpc
 
+
+# sim/cockpit2/engine/actuators/throttle_ratio
+
 class EngineStabilityMonitor:
     def __init__(self):
 
@@ -24,7 +27,7 @@ class EngineStabilityMonitor:
         # =========================
         self.drefs = [
             "sim/flightmodel/engine/ENGN_TRQ",
-            "sim/flightmodel/rotor/main_rotor_rpm",
+            "sim/cockpit2/engine/indicators/prop_speed_rpm",
             "sim/flightmodel/engine/ENGN_FF_",
             "sim/flightmodel2/engines/N1_percent",
             "sim/flightmodel2/engines/N2_percent",
@@ -42,16 +45,15 @@ class EngineStabilityMonitor:
             k: deque(maxlen=self.window_size) for k in self.keys
         }
 
-
     # =========================
     # CONTROL NEUTRO
     # =========================
     def send_neutral_controls(self):
         self.client.sendCTRL([
-            0.0# pitch
+            0.0, # pitch
             0.0,  # roll
             0.0,  # yaw
-            0.0   # throttle / collective
+            1      # throttle / collective
         ])
 
     # =========================
@@ -59,7 +61,7 @@ class EngineStabilityMonitor:
     # =========================
     def read_data(self):
         values = self.client.getDREFs(self.drefs)
-        #values = [v[1] for v in values]
+        # values = [v[0] for v in values]
 
         data = dict(zip(self.keys, values))
 
