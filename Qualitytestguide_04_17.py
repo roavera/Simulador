@@ -26,8 +26,8 @@ MIN_TIME_BETWEEN_POINTS = 2.0       # tiempo mínimo entre transiciones de punto
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
-    filename='flight_controller.log'    # lo crea en el mismo directorio del script
-    filemode='a'                        # No sobrescribir el log en cada ejecución, sino que se añada al final del archivo
+    filename='flight_controller.log' ,   # lo crea en el mismo directorio del script
+    filemode='a'               ,         # No sobrescribir el log en cada ejecución, sino que se añada al final del archivo
 )
 
 # =============================================

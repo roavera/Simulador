@@ -1,3 +1,5 @@
+# funciona horriblemente 
+
 import math
 import time
 import csv

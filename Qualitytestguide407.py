@@ -1,4 +1,4 @@
-
+# no funciona BIEN 
 import math
 import time 
 import csv
