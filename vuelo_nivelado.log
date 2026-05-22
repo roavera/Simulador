@@ -1,0 +1,14 @@
+2026-05-22 13:54:13,544 [INFO] Conexión con X-Plane establecida.
+2026-05-22 13:54:15,545 [INFO] Posición inicial: -34.554°, -58.425° | Alt: 4500 ft | IAS: 50 kts
+2026-05-22 13:54:15,545 [INFO] FlightController inicializado.
+2026-05-22 13:54:15,549 [ERROR] Error inesperado: tuple index out of range
+Traceback (most recent call last):
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\2026_05_22.py", line 365, in <module>
+    controller.run(ALTITUDE)
+    ~~~~~~~~~~~~~~^^^^^^^^^^
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\2026_05_22.py", line 267, in run
+    state = self._read_state()
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\2026_05_22.py", line 178, in _read_state
+    state  = {k: v[0] for k, v in zip(keys, values)}
+                 ~^^^
+IndexError: tuple index out of range

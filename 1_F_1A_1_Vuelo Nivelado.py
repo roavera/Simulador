@@ -50,17 +50,18 @@ KTS_TO_METERS_PER_SEC = 0.514444    # 1 nudo = 0.514444 m/s
 # CONDICIONES INICIALES
 # =========================================================
 
-LAT = -34.554
-LON = -58.425
-ALTITUDE = 4500        # ft
+LAT = -34.554          # grados, se lo puede ajustar para iniciar en un lugar específico del mapa
+LON = -58.425          # grados, se lo puede ajustar para iniciar en un lugar específico del mapa
+ALTITUDE = 10000      # ft
 INITIAL_SPEED = 50     # kts - airspeed
 
 FINAL_SPEED = 120      # kts - airspeed
 VERTICAL_SPEED = 0     # ft/min - vertical speed 
 SPEED_ROLL = 0         # kts - velocidad a la que el helicóptero comienza a inclinarse 
 
+
 # =========================================================
-# CONTROLADOR PID
+# CONTROLADOR 
 # =========================================================
 
 class FlightController:
@@ -68,10 +69,34 @@ class FlightController:
         self.client = client
         self.flight_phase = 'cruise'
 
+
         # Inicializar PIDs con parámetros por defecto
-        self._initialize_pids()
-        
-    def _initialize_pids(self):
+        self._init_pids()
+
+        # Configurar datarefs
+        self.datarefs = [
+            'sim/flightmodel/position/y_agl',                                   # 0: altitud    [m]
+            'sim/cockpit2/gauges/indicators/heading_electric_deg_mag_pilot',    # 1: heading    [grados magnéticos]
+            'sim/cockpit2/gauges/indicators/airspeed_kts_pilot',                # 2: airspeed   [knots]
+            'sim/flightmodel/position/local_vx',                                # 3: v_lat      [m/s]
+            'sim/flightmodel/position/local_vy',                                # 4: climb_rate [m/s]
+            'sim/flightmodel/position/local_vz',                                # 5: v_long     [m/s]
+            'sim/flightmodel/position/local_x',                                 # 6: pos_x      [m]
+            'sim/flightmodel/position/local_y',                                 # 7: pos_y      [m]
+            'sim/flightmodel/position/local_z',                                 # 8: pos_z      [m]
+            'sim/flightmodel/position/theta',                                   # 9: pitch      [grados]
+            'sim/flightmodel/position/phi',                                     # 10: roll      [grados]
+            'sim/flightmodel/position/psi',                                     # 11: yaw       [grados]
+            'sim/flightmodel/position/latitude',                                # 12: lat       [grados]
+            'sim/flightmodel/position/longitude',                               # 13: lon       [grados]
+            'sim/cockpit2/engine/actuators/prop_angle_degrees'                  # 14: collective[grados]
+        ]
+
+    # =========================================================
+    # INICIALIZACIÓN DE PIDs
+    # =========================================================
+
+    def _init_pids(self):
         # PID para velocidad vertical (climb rate)
         # Controla el collective para mantener la altitud
 
@@ -87,7 +112,7 @@ class FlightController:
         self.pid_pitch.output_limits = (-0.7 , 0.7)             
         
         # PID para roll (phi) - Rolido
-        self.pid_roll = PID(0.008, 0.002, 0.0, setpoint=0)
+        self.pid_roll = PID(0.008, 0.002, 0.0, setpoint=SPEED_ROLL)
         self.pid_roll.output_limits = (-0.7,0.7)
         
         # PID de yaw (psi) - pedales
@@ -107,7 +132,7 @@ class FlightController:
         
         # Limitar la referencia de velocidad vertical para evitar comandos extremos
         # Evita ascensos violentos e inestabilidad
-        MAX_CLIMB_RATE = 100 * 0.00508  # 100 ft/min en m/s
+        MAX_CLIMB_RATE = 100 * KTS_TO_METERS_PER_SEC  # 100 ft/min en m/s
         
         # Error de altitud (suavizado para evitar cambios bruscos)
         # Movimientos mas suaves, estables y lentos para evitar oscilaciones 
@@ -126,9 +151,43 @@ class FlightController:
         # Limitar rango físico del collective (-4 a 11 grados)
         return max(-4.0, min(11.0, new_collective))
     
+    def calculate_pitch_control(self, target_speed, current_speed):
+        self.pid_pitch.setpoint = target_speed
+        return self.pid_pitch(current_speed)
     
+    def calculate_roll_control(self, target_speed, current_speed):
+        self.pid_roll.setpoint = target_speed
+        return self.pid_roll(current_speed)
     
+    def calculate_yaw_control(self, target_heading, current_heading):
+        self.pid_yaw.setpoint = target_heading
+        return self.pid_yaw(current_heading)
+    
+    def run(self, target_altitude):
+        # Capturar heading de referencia al inicio del vuelo
+        data = self.client.getDREFs(self.datarefs)
+        heading_ref = data[1]  # Heading magnético inicial
+        
+        while True:
+            # Leer datos del simulador
+            data = self.client.getDREFs(self.datarefs)
+            altitude_agl = data[0] * FT_TO_METERS  # Convertir a metros
+            heading = data[1]
+            airspeed = data[2]
+            climb_rate = data[4]
+            current_collective = data[14]
 
+            # Calcular controles
+            collective_cmd = self.calculate_collective_control(target_altitude * FT_TO_METERS, altitude_agl, climb_rate, current_collective)
+            pitch_cmd = self.calculate_pitch_control(FINAL_SPEED, airspeed)
+            roll_cmd = self.calculate_roll_control(SPEED_ROLL, airspeed)
+            yaw_cmd = self.calculate_yaw_control(heading_ref, heading)
+
+            # Enviar comandos al simulador
+            self.client.sendDREF("sim/cockpit2/controls/yoke_pitch_ratio", pitch_cmd)
+            self.client.sendDREF("sim/cockpit2/controls/yoke_roll_ratio", roll_cmd)
+            self.client.sendDREF("sim/cockpit2/controls/yoke_heading_ratio", yaw_cmd)
+            self.client.sendDREF("sim/cockpit2/engine/actuators/prop_angle_degrees", collective_cmd)
 
 # =========================================================
 # CONEXIÓN CON X-PLANE
@@ -137,7 +196,7 @@ if __name__ == "__main__":
     with xpc.XPlaneConnect() as client:
         
         #Posición inicial 
-        values = [LAT, LON, ALTITUDE, 0, 0, 0] # lat, lon, alt, pitch, roll, heading
+        values = [LAT, LON, ALTITUDE , 0, 0, 0] # lat, lon, alt, pitch, roll, heading
         client.sendPOSI(values, 0)
         #Activar el override de IAS 
         client.sendDREF("sim/operation/override/override_ias", 1)
@@ -152,3 +211,4 @@ if __name__ == "__main__":
         controller.run(ALTITUDE)
 
 # client.sendDREF("sim/flightmodel/position/local_vz", INITIAL_SPEED * KTS_TO_METERS_PER_SEC)
+# sim/network/misc/network_time_sec tiempo en segundos
