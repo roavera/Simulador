@@ -463,3 +463,99 @@
 2026-05-21 12:11:12,807 - INFO - ASCENSO - Alt: 1.1m/20.0m, Climb: 0.15m/s | Pos_err: X=7.6m Z=-37.7m | Vel: vx=1.80 vz=0.99 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=8.5° R=3.0°
 2026-05-21 12:11:13,815 - INFO - ASCENSO - Alt: 1.3m/20.0m, Climb: -0.22m/s | Pos_err: X=7.5m Z=-38.5m | Vel: vx=-1.90 vz=0.64 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=7.8° R=-6.6°
 2026-05-21 12:11:14,824 - INFO - ASCENSO - Alt: 0.7m/20.0m, Climb: -0.32m/s | Pos_err: X=10.0m Z=-39.5m | Vel: vx=-1.67 vz=1.47 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=10.0° R=-3.8°
+2026-05-22 15:04:24,530 - INFO - Conexión con X-Plane establecida
+2026-05-22 15:04:24,530 - INFO - PIDs inicializados correctamente
+2026-05-22 15:04:24,539 - INFO - ======================================================================
+2026-05-22 15:04:24,540 - INFO - INICIANDO TEST DE HOVER CON CONTROL EN CASCADA
+2026-05-22 15:04:24,540 - INFO - Objetivo: Subir a 20.0m y mantener por 20.0s
+2026-05-22 15:04:24,540 - INFO - ======================================================================
+2026-05-22 15:04:24,540 - INFO - Obteniendo posición inicial...
+2026-05-22 15:04:24,542 - INFO - Posición inicial: X=-38916.28, Z=6130.05
+2026-05-22 15:04:24,542 - INFO - Heading inicial: 285.6°
+2026-05-22 15:04:24,550 - INFO - ======================================================================
+2026-05-22 15:04:24,550 - INFO - ALTITUD OBJETIVO ALCANZADA: 9784.4m
+2026-05-22 15:04:24,550 - INFO - INICIANDO HOVER POR 20.0 SEGUNDOS
+2026-05-22 15:04:24,550 - INFO - ======================================================================
+2026-05-22 15:04:25,574 - INFO - HOVER - Alt: 9784.4m, Tiempo: 1.0s/20.0s | Pos_err: X=0.0m Z=0.0m | Vel: vx=5.45 vz=6.20
+2026-05-22 15:04:26,660 - INFO - HOVER - Alt: 9776.4m, Tiempo: 2.1s/20.0s | Pos_err: X=-0.8m Z=-1.0m | Vel: vx=3.69 vz=5.09
+2026-05-22 15:04:27,423 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:27,625 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:27,830 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:28,032 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:28,234 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:28,437 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:28,641 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:28,844 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:29,048 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:29,252 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:29,455 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:29,658 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:29,864 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:30,070 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:30,273 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:30,480 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:30,684 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:30,887 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:31,091 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:31,293 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:31,497 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:31,699 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:31,902 - ERROR - Error en ciclo de control: timed out
+2026-05-22 15:04:48,254 - INFO - Conexión con X-Plane establecida
+2026-05-22 15:04:48,254 - INFO - PIDs inicializados correctamente
+2026-05-22 15:04:48,257 - INFO - ======================================================================
+2026-05-22 15:04:48,257 - INFO - INICIANDO TEST DE HOVER CON CONTROL EN CASCADA
+2026-05-22 15:04:48,257 - INFO - Objetivo: Subir a 20.0m y mantener por 20.0s
+2026-05-22 15:04:48,257 - INFO - ======================================================================
+2026-05-22 15:04:48,257 - INFO - Obteniendo posición inicial...
+2026-05-22 15:04:48,264 - INFO - Posición inicial: X=-38965.36, Z=6101.38
+2026-05-22 15:04:48,264 - INFO - Heading inicial: 133.7°
+2026-05-22 15:04:49,305 - INFO - ASCENSO - Alt: 0.1m/20.0m, Climb: 0.01m/s | Pos_err: X=-0.0m Z=-0.0m | Vel: vx=0.00 vz=0.00 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=0.0° R=0.0°
+2026-05-22 15:04:50,366 - INFO - ASCENSO - Alt: 0.1m/20.0m, Climb: 0.01m/s | Pos_err: X=-0.0m Z=-0.0m | Vel: vx=0.01 vz=0.01 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=0.0° R=0.0°
+2026-05-22 15:04:51,425 - INFO - ASCENSO - Alt: 0.1m/20.0m, Climb: 0.01m/s | Pos_err: X=-0.0m Z=-0.0m | Vel: vx=0.03 vz=0.02 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=0.1° R=0.1°
+2026-05-22 15:04:52,492 - INFO - ASCENSO - Alt: 0.1m/20.0m, Climb: 0.07m/s | Pos_err: X=-0.1m Z=-0.1m | Vel: vx=0.32 vz=0.34 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=1.1° R=1.0°
+2026-05-22 15:04:53,570 - INFO - ASCENSO - Alt: 0.2m/20.0m, Climb: 0.10m/s | Pos_err: X=-0.8m Z=-0.9m | Vel: vx=0.75 vz=1.07 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=3.0° R=2.1°
+2026-05-22 15:04:54,627 - INFO - ASCENSO - Alt: 0.3m/20.0m, Climb: 0.11m/s | Pos_err: X=-1.6m Z=-2.4m | Vel: vx=0.85 vz=1.77 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=5.0° R=2.3°
+2026-05-22 15:04:55,694 - INFO - ASCENSO - Alt: 0.4m/20.0m, Climb: 0.10m/s | Pos_err: X=-2.5m Z=-4.6m | Vel: vx=0.66 vz=2.34 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.7° R=1.9°
+2026-05-22 15:04:56,764 - INFO - ASCENSO - Alt: 0.5m/20.0m, Climb: 0.10m/s | Pos_err: X=-3.0m Z=-7.3m | Vel: vx=0.28 vz=2.71 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=8.0° R=1.0°
+2026-05-22 15:04:57,834 - INFO - ASCENSO - Alt: 0.7m/20.0m, Climb: 0.10m/s | Pos_err: X=-3.0m Z=-10.3m | Vel: vx=-0.20 vz=2.86 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=8.7° R=-0.2°
+2026-05-22 15:04:58,903 - INFO - ASCENSO - Alt: 0.8m/20.0m, Climb: 0.10m/s | Pos_err: X=-2.5m Z=-13.4m | Vel: vx=-0.67 vz=2.80 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=9.0° R=-1.4°
+2026-05-22 15:04:59,981 - INFO - ASCENSO - Alt: 0.9m/20.0m, Climb: 0.10m/s | Pos_err: X=-1.6m Z=-16.3m | Vel: vx=-1.06 vz=2.55 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=8.7° R=-2.5°
+2026-05-22 15:05:01,061 - INFO - ASCENSO - Alt: 1.0m/20.0m, Climb: 0.10m/s | Pos_err: X=-0.3m Z=-18.8m | Vel: vx=-1.29 vz=2.17 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=8.2° R=-3.2°
+2026-05-22 15:05:02,143 - INFO - ASCENSO - Alt: 1.1m/20.0m, Climb: 0.10m/s | Pos_err: X=1.1m Z=-21.0m | Vel: vx=-1.36 vz=1.75 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=7.4° R=-3.6°
+2026-05-22 15:05:03,212 - INFO - ASCENSO - Alt: 1.3m/20.0m, Climb: 0.10m/s | Pos_err: X=2.6m Z=-22.6m | Vel: vx=-1.27 vz=1.34 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.6° R=-3.5°
+2026-05-22 15:05:04,286 - INFO - ASCENSO - Alt: 1.4m/20.0m, Climb: 0.10m/s | Pos_err: X=3.8m Z=-23.9m | Vel: vx=-1.04 vz=1.02 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.1° R=-3.1°
+2026-05-22 15:05:05,344 - INFO - ASCENSO - Alt: 1.5m/20.0m, Climb: 0.10m/s | Pos_err: X=4.8m Z=-24.8m | Vel: vx=-0.74 vz=0.80 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=5.7° R=-2.5°
+2026-05-22 15:05:06,408 - INFO - ASCENSO - Alt: 1.6m/20.0m, Climb: 0.10m/s | Pos_err: X=5.4m Z=-25.6m | Vel: vx=-0.46 vz=0.66 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=5.5° R=-1.9°
+2026-05-22 15:05:07,459 - INFO - ASCENSO - Alt: 1.7m/20.0m, Climb: 0.10m/s | Pos_err: X=5.7m Z=-26.2m | Vel: vx=-0.21 vz=0.61 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=5.4° R=-1.3°
+2026-05-22 15:05:08,517 - INFO - ASCENSO - Alt: 1.8m/20.0m, Climb: 0.10m/s | Pos_err: X=5.9m Z=-26.9m | Vel: vx=-0.01 vz=0.62 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=5.6° R=-0.8°
+2026-05-22 15:05:09,594 - INFO - ASCENSO - Alt: 1.9m/20.0m, Climb: 0.10m/s | Pos_err: X=5.8m Z=-27.6m | Vel: vx=0.13 vz=0.68 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=5.9° R=-0.5°
+2026-05-22 15:05:10,673 - INFO - ASCENSO - Alt: 2.0m/20.0m, Climb: 0.10m/s | Pos_err: X=5.6m Z=-28.4m | Vel: vx=0.20 vz=0.77 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.2° R=-0.3°
+2026-05-22 15:05:11,744 - INFO - ASCENSO - Alt: 2.1m/20.0m, Climb: 0.10m/s | Pos_err: X=5.4m Z=-29.2m | Vel: vx=0.20 vz=0.86 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.6° R=-0.3°
+2026-05-22 15:05:12,824 - INFO - ASCENSO - Alt: 2.3m/20.0m, Climb: 0.10m/s | Pos_err: X=5.2m Z=-30.2m | Vel: vx=0.14 vz=0.92 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.9° R=-0.4°
+2026-05-22 15:05:13,912 - INFO - ASCENSO - Alt: 2.4m/20.0m, Climb: 0.11m/s | Pos_err: X=5.1m Z=-31.2m | Vel: vx=0.05 vz=0.95 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=7.1° R=-0.7°
+2026-05-22 15:05:14,984 - INFO - ASCENSO - Alt: 2.5m/20.0m, Climb: 0.11m/s | Pos_err: X=5.1m Z=-32.2m | Vel: vx=-0.06 vz=0.94 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=7.2° R=-1.0°
+2026-05-22 15:05:16,048 - INFO - ASCENSO - Alt: 2.6m/20.0m, Climb: 0.11m/s | Pos_err: X=5.2m Z=-33.2m | Vel: vx=-0.17 vz=0.90 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=7.2° R=-1.2°
+2026-05-22 15:05:17,120 - INFO - ASCENSO - Alt: 2.7m/20.0m, Climb: 0.10m/s | Pos_err: X=5.4m Z=-34.2m | Vel: vx=-0.26 vz=0.82 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=7.1° R=-1.5°
+2026-05-22 15:05:18,186 - INFO - ASCENSO - Alt: 2.8m/20.0m, Climb: 0.10m/s | Pos_err: X=5.8m Z=-35.0m | Vel: vx=-0.32 vz=0.72 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=7.0° R=-1.7°
+2026-05-22 15:05:19,243 - INFO - ASCENSO - Alt: 2.9m/20.0m, Climb: 0.10m/s | Pos_err: X=6.1m Z=-35.7m | Vel: vx=-0.35 vz=0.62 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.9° R=-1.8°
+2026-05-22 15:05:20,309 - INFO - ASCENSO - Alt: 3.1m/20.0m, Climb: 0.10m/s | Pos_err: X=6.5m Z=-36.3m | Vel: vx=-0.35 vz=0.51 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.7° R=-1.9°
+2026-05-22 15:05:21,398 - INFO - ASCENSO - Alt: 3.2m/20.0m, Climb: 0.10m/s | Pos_err: X=6.9m Z=-36.8m | Vel: vx=-0.33 vz=0.42 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.5° R=-1.8°
+2026-05-22 15:05:22,470 - INFO - ASCENSO - Alt: 3.3m/20.0m, Climb: 0.10m/s | Pos_err: X=7.2m Z=-37.2m | Vel: vx=-0.29 vz=0.34 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.4° R=-1.8°
+2026-05-22 15:05:23,538 - INFO - ASCENSO - Alt: 3.4m/20.0m, Climb: 0.10m/s | Pos_err: X=7.5m Z=-37.5m | Vel: vx=-0.24 vz=0.29 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.3° R=-1.7°
+2026-05-22 15:05:24,614 - INFO - ASCENSO - Alt: 3.5m/20.0m, Climb: 0.10m/s | Pos_err: X=7.7m Z=-37.8m | Vel: vx=-0.19 vz=0.25 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.3° R=-1.6°
+2026-05-22 15:05:25,680 - INFO - ASCENSO - Alt: 3.6m/20.0m, Climb: 0.10m/s | Pos_err: X=7.9m Z=-38.1m | Vel: vx=-0.14 vz=0.23 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.3° R=-1.5°
+2026-05-22 15:05:26,749 - INFO - ASCENSO - Alt: 3.7m/20.0m, Climb: 0.10m/s | Pos_err: X=8.0m Z=-38.3m | Vel: vx=-0.10 vz=0.23 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.3° R=-1.4°
+2026-05-22 15:05:27,825 - INFO - ASCENSO - Alt: 3.9m/20.0m, Climb: 0.10m/s | Pos_err: X=8.1m Z=-38.6m | Vel: vx=-0.07 vz=0.23 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.4° R=-1.4°
+2026-05-22 15:05:28,895 - INFO - ASCENSO - Alt: 4.0m/20.0m, Climb: 0.10m/s | Pos_err: X=8.2m Z=-38.8m | Vel: vx=-0.04 vz=0.23 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.4° R=-1.3°
+2026-05-22 15:05:29,967 - INFO - ASCENSO - Alt: 4.1m/20.0m, Climb: 0.10m/s | Pos_err: X=8.2m Z=-39.1m | Vel: vx=-0.04 vz=0.24 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.5° R=-1.3°
+2026-05-22 15:05:31,036 - INFO - ASCENSO - Alt: 4.2m/20.0m, Climb: 0.10m/s | Pos_err: X=8.2m Z=-39.3m | Vel: vx=-0.03 vz=0.24 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.5° R=-1.3°
+2026-05-22 15:05:32,108 - INFO - ASCENSO - Alt: 4.2m/20.0m, Climb: 0.10m/s | Pos_err: X=8.2m Z=-39.4m | Vel: vx=-0.04 vz=0.24 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.5° R=-1.3°
+2026-05-22 15:05:33,217 - INFO - ASCENSO - Alt: 4.2m/20.0m, Climb: 0.10m/s | Pos_err: X=8.2m Z=-39.4m | Vel: vx=-0.04 vz=0.24 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.6° R=-1.3°
+2026-05-22 15:05:34,330 - INFO - ASCENSO - Alt: 4.2m/20.0m, Climb: 0.10m/s | Pos_err: X=8.2m Z=-39.4m | Vel: vx=-0.04 vz=0.24 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.6° R=-1.3°
+2026-05-22 15:05:35,440 - INFO - ASCENSO - Alt: 4.2m/20.0m, Climb: 0.10m/s | Pos_err: X=8.2m Z=-39.4m | Vel: vx=-0.04 vz=0.24 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.7° R=-1.3°
+2026-05-22 15:05:36,551 - INFO - ASCENSO - Alt: 4.2m/20.0m, Climb: 0.10m/s | Pos_err: X=8.2m Z=-39.4m | Vel: vx=-0.04 vz=0.24 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.7° R=-1.4°
+2026-05-22 15:05:37,654 - INFO - ASCENSO - Alt: 4.2m/20.0m, Climb: 0.10m/s | Pos_err: X=8.2m Z=-39.4m | Vel: vx=-0.04 vz=0.24 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.7° R=-1.4°
+2026-05-22 15:05:38,745 - INFO - ASCENSO - Alt: 4.2m/20.0m, Climb: 0.10m/s | Pos_err: X=8.2m Z=-39.4m | Vel: vx=-0.04 vz=0.24 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.8° R=-1.4°
+2026-05-22 15:05:39,838 - INFO - ASCENSO - Alt: 4.2m/20.0m, Climb: 0.10m/s | Pos_err: X=8.2m Z=-39.4m | Vel: vx=-0.04 vz=0.24 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.8° R=-1.4°
+2026-05-22 15:05:40,919 - INFO - ASCENSO - Alt: 4.2m/20.0m, Climb: 0.10m/s | Pos_err: X=8.2m Z=-39.4m | Vel: vx=-0.04 vz=0.24 | Vel_cmd: vx=0.00 vz=0.00 | Att_cmd: P=6.9° R=-1.4°

@@ -45,6 +45,7 @@ from XPlaneConnect.Python3.src import xpc
 # Conversión de unidades
 FT_TO_METERS = 0.3048
 KTS_TO_METERS_PER_SEC = 0.514444    # 1 nudo = 0.514444 m/s
+METERS_TO_FT = 1 / FT_TO_METERS
 
 # =========================================================
 # CONDICIONES INICIALES
@@ -52,7 +53,7 @@ KTS_TO_METERS_PER_SEC = 0.514444    # 1 nudo = 0.514444 m/s
 
 LAT = -34.554          # grados, se lo puede ajustar para iniciar en un lugar específico del mapa
 LON = -58.425          # grados, se lo puede ajustar para iniciar en un lugar específico del mapa
-ALTITUDE = 10000      # ft
+ALTITUDE = 4500        # ft - altitud que se desea mantener durante el vuelo nivelado
 INITIAL_SPEED = 50     # kts - airspeed
 
 FINAL_SPEED = 120      # kts - airspeed
@@ -69,6 +70,7 @@ class FlightController:
         self.client = client
         self.flight_phase = 'cruise'
 
+        self.target_speed_setpoint = INITIAL_SPEED
 
         # Inicializar PIDs con parámetros por defecto
         self._init_pids()
@@ -101,7 +103,7 @@ class FlightController:
         # Controla el collective para mantener la altitud
 
         self.pid_collective = PID(1, 0.01, 0.1, setpoint=0)
-        self.pid_collective.output_limits = (-3, 3)
+        self.pid_collective.output_limits = (-2.5, 2.5)
 
         # -------------------------------------------- #
         # ÁNGULOS 
@@ -128,11 +130,18 @@ class FlightController:
     # =============================================
     # Velocidad vertical (climb rate) -> Collective
     # Control suave del collective con limitaciones dinámicas para evitar cambios bruscos que puedan desestabilizar el vuelo.
+    # Args:
+    #        target_altitude_m: Altitud objetivo en metros
+    #        current_altitude_m: Altitud actual en metros
+    #        climb_rate: Velocidad vertical actual en m/s
+    #        current_collective: Ángulo actual del collective en grados
+    # Returns:
+    #        new_collective: Nuevo ángulo del collective en grados, limitado a un rango seguro
     def calculate_collective_control(self, target_altitude, current_altitude, climb_rate,current_collective):
         
         # Limitar la referencia de velocidad vertical para evitar comandos extremos
         # Evita ascensos violentos e inestabilidad
-        MAX_CLIMB_RATE = 100 * KTS_TO_METERS_PER_SEC  # 100 ft/min en m/s
+        MAX_CLIMB_RATE = 100 * KTS_TO_METERS_PER_SEC  # 51.444 m/s
         
         # Error de altitud (suavizado para evitar cambios bruscos)
         # Movimientos mas suaves, estables y lentos para evitar oscilaciones 
@@ -149,33 +158,60 @@ class FlightController:
         new_collective = current_collective + collective_change
         
         # Limitar rango físico del collective (-4 a 11 grados)
-        return max(-4.0, min(11.0, new_collective))
-    
+        new_collective = max(-4.0, min(11.0, new_collective))
+        return new_collective
+
+    # =============================================
+    # CONTROL DE ÁNGULOS
+    # ============================================= 
+
+    # Pitch 
+    # Args:
+    #        target_speed: Velocidad objetivo en nudos
+    #        current_speed: Velocidad actual en nudos
+    # Returns:
+    # pitch_cmd: Comando de pitch (yoke_pitch_ratio) entre -0.7 y 0.7
+
     def calculate_pitch_control(self, target_speed, current_speed):
         self.pid_pitch.setpoint = target_speed
         return self.pid_pitch(current_speed)
     
+    # Roll
+    # Args:
+    #        target_speed: Velocidad a la que el helicóptero comienza a inclinarse en nudos
+    #        current_speed: Velocidad actual en nudos
+    # Returns:
+    # roll_cmd: Comando de roll (yoke_roll_ratio) entre -0.7 y 0.7
     def calculate_roll_control(self, target_speed, current_speed):
         self.pid_roll.setpoint = target_speed
         return self.pid_roll(current_speed)
     
+    # Yaw
+    # Args:
+    #        target_heading: Heading objetivo en grados magnéticos
+    #        current_heading: Heading actual en grados magnéticos 
+    # Returns:
+    # yaw_cmd: Comando de yaw (yoke_heading_ratio) entre -5 y 5
     def calculate_yaw_control(self, target_heading, current_heading):
         self.pid_yaw.setpoint = target_heading
         return self.pid_yaw(current_heading)
     
+    # =============================================
+
+
     def run(self, target_altitude):
         # Capturar heading de referencia al inicio del vuelo
-        data = self.client.getDREFs(self.datarefs)
-        heading_ref = data[1]  # Heading magnético inicial
+        data = self.client.getDREFs(self.datarefs) 
+        heading_ref = float(data[1][0])  # Heading magnético inicial
         
         while True:
             # Leer datos del simulador
-            data = self.client.getDREFs(self.datarefs)
-            altitude_agl = data[0] * FT_TO_METERS  # Convertir a metros
-            heading = data[1]
-            airspeed = data[2]
-            climb_rate = data[4]
-            current_collective = data[14]
+            data = self.client.getDREFs(self.datarefs) #
+            altitude_agl = float(data[0][0])  * FT_TO_METERS  # Convertir a metros
+            heading = float(data[1][0])
+            airspeed = float(data[2][0])
+            climb_rate = float(data[4][0])
+            current_collective = float(data[14][0]) 
 
             # Calcular controles
             collective_cmd = self.calculate_collective_control(target_altitude * FT_TO_METERS, altitude_agl, climb_rate, current_collective)
@@ -210,5 +246,3 @@ if __name__ == "__main__":
         controller = FlightController(client)
         controller.run(ALTITUDE)
 
-# client.sendDREF("sim/flightmodel/position/local_vz", INITIAL_SPEED * KTS_TO_METERS_PER_SEC)
-# sim/network/misc/network_time_sec tiempo en segundos

@@ -1,149 +1,290 @@
-from collections import deque
-import math
 import time
-import csv
-import os
+import math
 import logging
 from simple_pid import PID
 from XPlaneConnect.Python3.src import xpc
 
 # =========================================================
-# PARAMETROS Y CONVERSIONES
+# CONFIGURACIÓN
 # =========================================================
 
 FT_TO_METERS = 0.3048
-KTS_TO_MPS = 0.514444         
-FPM_TO_MPS = 0.3048 / 60      # Factor para ft/min a m/s
+KTS_TO_MPS = 0.514444
+
+TARGET_ALTITUDE_FT = 4500
+TARGET_ALTITUDE_M = TARGET_ALTITUDE_FT * FT_TO_METERS
+
+INITIAL_SPEED = 50
+TARGET_SPEED = 120
 
 # =========================================================
-# CONDICIONES INICIALES
+# LOGGING
 # =========================================================
 
-LAT = -34.554          
-LON = -58.425          
-ALTITUDE = 4500        # ft 
-INITIAL_SPEED = 50     # kts 
-FINAL_SPEED = 120      # kts 
-SPEED_ROLL = 0         # grados 
-SAMPLE_RATE = 0.05     # Segundos (20 Hz)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s'
+)
 
 # =========================================================
-# CONTROLADOR 
+# CONTROLADOR
 # =========================================================
 
-class FlightController:
-    def __init__(self, client):
-        self.client = client
-        self.flight_phase = 'cruise'
+class LevelFlightController:
+
+    def __init__(self):
+
+        self.client = xpc.XPlaneConnect()
+
+        self.setup_datarefs()
+
         self._init_pids()
 
+        self.initial_heading = None
+
+    # =====================================================
+    # DATAREFS
+    # =====================================================
+
+    def setup_datarefs(self):
+
         self.datarefs = [
-            'sim/flightmodel/position/y_agl',                                   # 0: altitud [m]
-            'sim/cockpit2/gauges/indicators/heading_electric_deg_mag_pilot',    # 1: heading [grados]
-            'sim/cockpit2/gauges/indicators/airspeed_kts_pilot',                # 2: airspeed [kts]
-            'sim/flightmodel/position/local_vx',                                # 3: v_lat [m/s]
-            'sim/flightmodel/position/local_vy',                                # 4: climb_rate [m/s]
-            'sim/flightmodel/position/local_vz',                                # 5: v_long [m/s]
-            'sim/flightmodel/position/local_x',                                 # 6: pos_x [m]
-            'sim/flightmodel/position/local_y',                                 # 7: pos_y [m]
-            'sim/flightmodel/position/local_z',                                 # 8: pos_z [m]
-            'sim/flightmodel/position/theta',                                   # 9: pitch [grados]
-            'sim/flightmodel/position/phi',                                     # 10: roll [grados]
-            'sim/flightmodel/position/psi',                                     # 11: yaw [grados]
-            'sim/flightmodel/position/latitude',                                # 12: lat [grados]
-            'sim/flightmodel/position/longitude',                               # 13: lon [grados]
-            'sim/cockpit2/engine/actuators/prop_angle_degrees'                  # 14: collective [grados]
+
+            # 0
+            'sim/flightmodel/position/y_agl',
+
+            # 1
+            'sim/cockpit2/gauges/indicators/airspeed_kts_pilot',
+
+            # 2
+            'sim/flightmodel/position/local_vy',
+
+            # 3
+            'sim/flightmodel/position/theta',
+
+            # 4
+            'sim/flightmodel/position/phi',
+
+            # 5
+            'sim/cockpit2/gauges/indicators/heading_electric_deg_mag_pilot',
+
+            # 6
+            'sim/cockpit2/engine/actuators/collective_ratio'
         ]
 
-    def _init_pids(self):
-        # COLLECTIVE (Altitud)
-        self.pid_collective = PID(1.0, 0.01, 0.1, setpoint=0, sample_time=SAMPLE_RATE)
-        self.pid_collective.output_limits = (-3.0, 3.0)
+    # =====================================================
+    # PID SETUP
+    # =====================================================
 
-        # PITCH (Velocidad Longitudinal) -> Ganancias NEGATIVAS
-        # Si V_target > V_current, se requiere pitch negativo (empujar mando) para acelerar
-        self.pid_pitch = PID(-0.05, -0.0001, -0.015, setpoint=FINAL_SPEED, sample_time=SAMPLE_RATE)
-        self.pid_pitch.output_limits = (-0.7, 0.7)             
+    def _init_pids(self):
+        # PID para velocidad vertical (climb rate)
+        # Controla el collective para mantener la altitud
+
+        self.pid_collective = PID(1, 0.01, 0.1, setpoint=0)
+        self.pid_collective.output_limits = (-3, 3)
+
+        # -------------------------------------------- #
+        # ÁNGULOS 
+
+        # PID para pitch (theta) - cabeceo
+        # Nariz arriba para aumentar altitud, nariz abajo para descender
+        self.pid_pitch = PID(0.05, 0.0001, 0.015, setpoint=TARGET_SPEED)
+        self.pid_pitch.output_limits = (-0.7 , 0.7)             
         
-        # ROLL (Estabilización Lateral)
-        self.pid_roll = PID(0.008, 0.002, 0.0, setpoint=SPEED_ROLL, sample_time=SAMPLE_RATE)
-        self.pid_roll.output_limits = (-0.7, 0.7)
+        # PID para roll (phi) - Rolido
+        self.pid_roll = PID(0.008, 0.002, 0.0, setpoint= 0)
+        self.pid_roll.output_limits = (-0.7,0.7)
         
-        # YAW (Rumbo)
-        self.pid_yaw = PID(0.0008, 0.0, 0.001, setpoint=0, sample_time=SAMPLE_RATE) 
-        self.pid_yaw.output_limits = (-1.0, 1.0) 
-    
-    def calculate_collective_control(self, target_altitude, current_altitude, climb_rate, current_collective):
-        MAX_CLIMB_RATE = 100 * FPM_TO_MPS  
-        
-        error_alt = 0.1 * (target_altitude - current_altitude) 
-        w_ref = max(-MAX_CLIMB_RATE, min(MAX_CLIMB_RATE, error_alt))
-        
-        self.pid_collective.setpoint = w_ref
-        collective_change = self.pid_collective(climb_rate)
-        
-        new_collective = current_collective + collective_change
-        return max(-4.0, min(11.0, new_collective))
-    
-    def calculate_pitch_control(self, current_speed):
-        return self.pid_pitch(current_speed)
-    
-    def calculate_roll_control(self, current_roll):
-        return self.pid_roll(current_roll)
-    
-    def calculate_yaw_control(self, target_heading, current_heading):
-        # Normalizar el error para lidiar con el cruce circular de los 360 grados
-        error = (target_heading - current_heading + 180) % 360 - 180
-        self.pid_yaw.setpoint = 0
-        return self.pid_yaw(-error)
-    
-    def run(self, target_altitude_ft):
-        print("Iniciando lazo de control PID...")
-        data = self.client.getDREFs(self.datarefs)
-        heading_ref = data[1][0] 
-        target_altitude_m = target_altitude_ft * FT_TO_METERS
+        # PID de yaw (psi) - pedales
+        # Controla el rotor de cola
+        # contrarresta la inercia y el torque del rotor
+        self.pid_yaw = PID(0.0008, 0.0, 0.001, setpoint=0)  # Parámetros optimizados
+        self.pid_yaw.output_limits = (-5,5 )
+        # -------------------------------------------- #
+
+    # =====================================================
+    # UTILS
+    # =====================================================
+
+    def saturate(self, value, min_val, max_val):
+
+        return max(min_val, min(max_val, value))
+
+    def heading_error(self, target, current):
+
+        return (target - current + 180) % 360 - 180
+
+    # =====================================================
+    # MAIN LOOP
+    # =====================================================
+
+    def run(self):
+
+        logging.info("Iniciando controlador...")
+
+        dt = 0.05
+
+        # Capturar heading inicial
+
+        initial_data = self.client.getDREFs(self.datarefs)
+
+        self.initial_heading = initial_data[5][0]
+
+        logging.info(f"Heading referencia: {self.initial_heading:.1f}")
 
         while True:
-            loop_start = time.time()
 
-            # Leer datos indexando el primer elemento del arreglo devuelto
-            data = self.client.getDREFs(self.datarefs)
-            
-            # y_agl en X-Plane viene en metros nativamente
-            altitude_agl = data[0][0] 
-            heading = data[1][0]
-            airspeed = data[2][0]
-            climb_rate = data[4][0]
-            current_roll = data[10][0]
-            current_collective = data[14][0]
+            try:
 
-            # Calcular controles
-            collective_cmd = self.calculate_collective_control(target_altitude_m, altitude_agl, climb_rate, current_collective)
-            pitch_cmd = self.calculate_pitch_control(airspeed)
-            roll_cmd = self.calculate_roll_control(current_roll)
-            yaw_cmd = self.calculate_yaw_control(heading_ref, heading)
+                data = self.client.getDREFs(self.datarefs)
 
-            # Enviar comandos como escalares puros (sin listas/corchetes)
-            self.client.sendDREF("sim/cockpit2/controls/yoke_pitch_ratio", pitch_cmd)
-            self.client.sendDREF("sim/cockpit2/controls/yoke_roll_ratio", roll_cmd)
-            self.client.sendDREF("sim/cockpit2/controls/yoke_heading_ratio", yaw_cmd)
-            self.client.sendDREF("sim/cockpit2/engine/actuators/prop_angle_degrees", collective_cmd)
+                altitude = data[0][0]
+                airspeed = data[1][0]
+                climb_rate = data[2][0]
+                pitch = data[3][0]
+                roll = data[4][0]
+                heading = data[5][0]
+                collective = data[6][0]
 
-            # Control de la frecuencia de muestreo del lazo (evita saturar el canal UDP)
-            elapsed = time.time() - loop_start
-            time.sleep(max(0, SAMPLE_RATE - elapsed))
+                # =================================================
+                # VELOCIDAD -> PITCH REF
+                # =================================================
+
+                pitch_ref = self.pid_speed(airspeed)
+
+                pitch_ref = self.saturate(
+                    pitch_ref,
+                    -10,
+                    10
+                )
+
+                # =================================================
+                # PITCH ATTITUDE LOOP
+                # =================================================
+
+                self.pid_pitch.setpoint = pitch_ref
+
+                pitch_cmd = self.pid_pitch(pitch)
+
+                # =================================================
+                # ALTITUD -> VSI REF
+                # =================================================
+
+                vsi_ref = self.pid_altitude(altitude)
+
+                # =================================================
+                # VSI -> COLLECTIVE
+                # =================================================
+
+                self.pid_collective.setpoint = vsi_ref
+
+                collective_delta = self.pid_collective(climb_rate)
+
+                collective_cmd = collective + collective_delta
+
+                collective_cmd = self.saturate(
+                    collective_cmd,
+                    0.0,
+                    1.0
+                )
+
+                # =================================================
+                # ROLL HOLD
+                # =================================================
+
+                roll_cmd = self.pid_roll(roll)
+
+                # =================================================
+                # YAW HOLD
+                # =================================================
+
+                yaw_error = self.heading_error(
+                    self.initial_heading,
+                    heading
+                )
+
+                yaw_cmd = self.pid_yaw(yaw_error)
+
+                # =================================================
+                # ENVIAR CONTROLES
+                # =================================================
+
+                self.client.sendCTRL([
+                    pitch_cmd,
+                    roll_cmd,
+                    -yaw_cmd
+                ])
+
+                self.client.sendDREF(
+                    'sim/cockpit2/engine/actuators/collective_ratio',
+                    collective_cmd
+                )
+
+                # =================================================
+                # LOG
+                # =================================================
+
+                logging.info(
+                    f"ALT={altitude/FT_TO_METERS:.0f}ft | "
+                    f"IAS={airspeed:.1f}kts | "
+                    f"PITCH={pitch:.1f}° | "
+                    f"COL={collective_cmd:.2f}"
+                )
+
+                time.sleep(dt)
+
+            except Exception as e:
+
+                logging.error(e)
+
+                time.sleep(0.1)
+
+# =========================================================
+# MAIN
+# =========================================================
 
 if __name__ == "__main__":
-    with xpc.XPlaneConnect() as client:
-        # Posicionamiento inicial
-        values = [LAT, LON, ALTITUDE * FT_TO_METERS, 0, 0, 0] 
-        client.sendPOSI(values, 0)
-        
-        # Override de la velocidad en los instrumentos (escalares puros)
-        client.sendDREF("sim/operation/override/override_ias", 1)
-        client.sendDREF("sim/cockpit2/gauges/indicators/airspeed_kts_pilot", INITIAL_SPEED)
-        time.sleep(2) 
-        client.sendDREF("sim/operation/override/override_ias", 0)
 
-        controller = FlightController(client)
-        controller.run(ALTITUDE)
+    controller = LevelFlightController()
+
+    client = controller.client
+
+    # =====================================================
+    # POSICIÓN INICIAL
+    # =====================================================
+
+    LAT = -34.554
+    LON = -58.425
+
+    posi = [
+
+        LAT,
+        LON,
+        TARGET_ALTITUDE_FT,
+        0,
+        0,
+        0
+    ]
+
+    client.sendPOSI(posi)
+
+    time.sleep(3)
+
+    # =====================================================
+    # VELOCIDAD INICIAL
+    # =====================================================
+
+    initial_speed_mps = INITIAL_SPEED * KTS_TO_MPS
+
+    client.sendDREF(
+        'sim/flightmodel/position/local_vz',
+        -initial_speed_mps
+    )
+
+    time.sleep(2)
+
+    # =====================================================
+    # INICIAR CONTROL
+    # =====================================================
+
+    controller.run()
