@@ -163829,3 +163829,30 @@ TimeoutError: timed out
 2026-06-05 12:49:21,474 - INFO - Posición seteada. Manteniendo Heading: 360.0°
 2026-06-05 12:49:39,486 - INFO - Transición de velocidad: 50kts -> 120kts
 2026-06-05 13:21:04,390 - INFO - Iniciando controlador de vuelo nivelado
+2026-06-05 14:43:55,044 - INFO - Cargamados 4 puntos de trayectoria
+2026-06-05 14:43:55,044 - INFO - Iniciando controlador de vuelo
+2026-06-05 14:43:55,044 - INFO - Obteniendo posición inicial de la aeronave...
+2026-06-05 14:43:55,154 - ERROR - Error crítico: timed out
+Traceback (most recent call last):
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\Qualitytestguide_04_17.py", line 262, in run
+    self.get_initial_position()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\Qualitytestguide_04_17.py", line 133, in get_initial_position
+    initial_data = self.client.getDREFs([
+        'sim/flightmodel/position/latitude',
+        'sim/flightmodel/position/longitude',
+        'sim/cockpit2/gauges/indicators/heading_electric_deg_mag_pilot'
+    ])
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\XPlaneConnect\Python3\src\xpc\__init__.py", line 348, in getDREFs
+    buffer = self.readUDP()
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\XPlaneConnect\Python3\src\xpc\__init__.py", line 69, in readUDP
+    return self.socket.recv(16384)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+TimeoutError: timed out
+2026-06-05 14:43:55,157 - INFO - Conexión con X-Plane cerrada
+2026-06-05 14:44:10,827 - INFO - Cargamados 4 puntos de trayectoria
+2026-06-05 14:44:10,827 - INFO - Iniciando controlador de vuelo
+2026-06-05 14:44:10,827 - INFO - Obteniendo posición inicial de la aeronave...
+2026-06-05 14:44:10,838 - INFO - Posición inicial: Lat=-34.554073, Lon=-58.425011, Heading=133.7°
+2026-06-05 14:44:10,838 - INFO - Heading inicial requerido: 121.1°
+2026-06-05 14:44:10,838 - INFO - Heading actual de la aeronave: 133.7°
