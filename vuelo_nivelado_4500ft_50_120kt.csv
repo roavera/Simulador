@@ -1,0 +1,1 @@
+time_s,phase,target_speed_kts,airspeed_kts,altitude_agl_ft,climb_rate_fpm,pitch_deg,roll_deg,heading_deg,yaw_deg,collective_deg,torque,prop_ratio,yoke_pitch,yoke_roll,yoke_yaw,mass_fixed_kg,fuel_kg,cg,latitude,longitude,pitch_cmd,roll_cmd,yaw_cmd

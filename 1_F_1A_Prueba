@@ -79,8 +79,6 @@ class FlightController:
 
         # Configurar datarefs
         self.datarefs = [
-
-            # y_agl es la altura sobre el terreno
             'sim/flightmodel/position/y_agl',                                   # 0: altitud    [m]
             'sim/cockpit2/gauges/indicators/heading_electric_deg_mag_pilot',    # 1: heading    [grados magnéticos]
             'sim/cockpit2/gauges/indicators/airspeed_kts_pilot',                # 2: airspeed   [knots]
@@ -95,7 +93,7 @@ class FlightController:
             'sim/flightmodel/position/psi',                                     # 11: yaw       [grados]
             'sim/flightmodel/position/latitude',                                # 12: lat       [grados]
             'sim/flightmodel/position/longitude',                               # 13: lon       [grados]
-            'sim/cockpit2/engine/actuators/prop_angle_degrees',                 # 14: collective[grados]
+            'sim/cockpit2/engine/actuators/prop_angle_degrees',                # 14: collective[grados]
         
             # Datarefs de interés para registro
             'sim/flightmodel/engine/ENGN_TRQ',                                  # 15: torque motor         
@@ -120,7 +118,7 @@ class FlightController:
         # PID para velocidad vertical (climb rate)
         # Controla el collective para mantener la altitud
 
-        self.pid_collective = PID(0.7, 0.02, 0.10, setpoint=0)
+        self.pid_collective = PID(1, 0.01, 0.1, setpoint=0)
         self.pid_collective.output_limits = (-4, 4)
         # -------------------------------------------- #
         # ÁNGULOS 
@@ -141,7 +139,7 @@ class FlightController:
         # PID de yaw (psi) - pedales
         # Controla el rotor de cola
         # contrarresta la inercia y el torque del rotor
-        self.pid_yaw = PID(0.07, 0.001, 0.004, setpoint=0)  # Parámetros optimizados
+        self.pid_yaw = PID(0.04, 0.0, 0.001, setpoint=0)  # Parámetros optimizados
         self.pid_yaw.output_limits = (-1.0,1.0)
 
         # -------------------------------------------- #
@@ -158,23 +156,35 @@ class FlightController:
     #        current_collective: Ángulo actual del collective en grados
     # Returns:
     #        new_collective: Nuevo ángulo del collective en grados, limitado a un rango seguro
-    def calculate_collective_control(self, target_altitude, current_altitude, climb_rate,current_collective):
+    def calculate_collective_control(self, target_altitude, current_altitude, climb_rate,current_collective, pitch_cmd):
         
-        # Error de altitud
-        error_alt = target_altitude - current_altitude
-
-        # Limitar climb rate deseado (m/s)
+        # Limitar la referencia de velocidad vertical para evitar comandos extremos
+        # Evita ascensos violentos e inestabilidad
         MAX_CLIMB_RATE = 3 * FT_TO_METERS / 60
+        # MAX_CLIMB_RATE = 100 * KTS_TO_METERS_PER_SEC  # 51.444 m/s
+        
+        # Error de altitud (suavizado para evitar cambios bruscos)
+        # Movimientos mas suaves, estables y lentos para evitar oscilaciones 
+        error_alt = 0.1 * (target_altitude - current_altitude)  # Factor de ganancia reducido
+        
+        # Limitar la referencia de velocidad vertical
         w_ref = max(-MAX_CLIMB_RATE, min(MAX_CLIMB_RATE, error_alt))
+        
+        # Aplicar PID al climb rate actual
+        self.pid_collective.setpoint = w_ref
+        
+        base_collective = current_collective + self.pid_collective(climb_rate)*0.1
+        
+        # Calcular nuevo valor con cambio incremental (suavizado)
+        new_collective = base_collective  # Cambio incremental aplicado al collective actual
 
-        # PID de collective
-        self.pid_collective.setpoint = 0
-        delta_collective = self.pid_collective(error_alt) * 0.01
-
-        new_collective = current_collective + delta_collective
-
-        # Limitar rango físico del collective
-        return max(-4.0, min(11.0, new_collective))
+        if pitch_cmd < -0.05:
+            compensation_pitch = abs(pitch_cmd) * 5
+            new_collective += compensation_pitch  # Factor de compensación para pitch negativo
+        
+        # Limitar rango físico del collective (-4 a 11 grados)
+        new_collective = max(-4.0, min(11.0, new_collective))
+        return new_collective
 
     # =============================================
     # CONTROL DE ÁNGULOS
@@ -190,8 +200,8 @@ class FlightController:
     def calculate_pitch_control(self, target_speed, current_speed):
         
         self.pid_speed.setpoint = target_speed
-        pitch_cmd = self.pid_speed(current_speed)
-        return pitch_cmd
+        pitch = self.pid_speed(current_speed)
+        return pitch
     
     # Roll
     # Args:
@@ -216,7 +226,7 @@ class FlightController:
             error_heading -= 360
         
         self.pid_yaw.setpoint = 0
-        return self.pid_yaw(error_heading)
+        return self.pid_yaw(-error_heading)
     
     # =============================================
 
@@ -235,11 +245,10 @@ class FlightController:
 
             # Leer datos del simulador
             data = self.client.getDREFs(self.datarefs)
-            # altitude_agl        = float(data[0][0])
+            altitude_agl        = float(data[0][0])
             heading             = float(data[1][0])
             airspeed            = float(data[2][0])
             climb_rate          = float(data[4][0])
-            altitude            = float(data[7][0])
             pitch_actual        = float(data[9][0])
             roll_actual         = float(data[10][0])
             current_collective  = float(data[14][0])
@@ -247,15 +256,16 @@ class FlightController:
 
             # Gestión de la RAMPA de velocidad (Incremento suave por ciclo)
             if self.current_target_speed < FINAL_SPEED:
-                self.current_target_speed += (1.0 * SAMPLE_TIME)  # Incremento suave de 2.5 kts por segundo
+                self.current_target_speed += (2.5 * SAMPLE_TIME)  # Incremento suave de 2.5 kts por segundo
                 if self.current_target_speed > FINAL_SPEED:
                     self.current_target_speed = FINAL_SPEED
 
-            # Cálculo del Pitch (Inversión de signo aplicada para bajar morro)
-            pitch_cmd= -self.calculate_pitch_control(self.current_target_speed, airspeed) 
+            # Cálculo del Pitch (Inversión de signo aplicada para bajar
+            pitch_pid_out = self.calculate_pitch_control(self.current_target_speed, airspeed)
+            pitch_cmd = -pitch_pid_out 
 
-            # Cálculo del Colectivo 
-            collective_cmd = self.calculate_collective_control(target_altitude, altitude, climb_rate, current_collective)
+            # Cálculo del Colectivo (Pasando el pitch_cmd para ejecutar el acoplamiento)
+            collective_cmd = self.calculate_collective_control(target_altitude, altitude_agl, climb_rate, current_collective, pitch_cmd)
             
             # Cálculo de Roll (Alas niveladas en 0 grados)
             roll_cmd = self.calculate_roll_control(0.0, roll_actual)
@@ -263,7 +273,7 @@ class FlightController:
             # Cálculo de Yaw (Mantener rumbo corrigiendo discontinuidad)
             error_heading = (heading_ref - heading + 360) % 360
             if error_heading > 180: error_heading -= 360
-            yaw_cmd = self.pid_yaw(error_heading)
+            yaw_cmd = -self.pid_yaw(-error_heading)
 
             # Enviar comandos al simulador
             self.client.sendDREF("sim/cockpit2/controls/yoke_pitch_ratio", pitch_cmd)
@@ -284,17 +294,12 @@ if __name__ == "__main__":
         
         #Posición inicial 
 
-        values = [LAT, LON, ALTITUDE , 0, 0, 0] # lat, lon, alt, pitch, roll, heading
+        values = [LAT, LON, ALTITUDE , 0, 0, 0] # lat, lon, alt, pitch, roll, heading : posición 
         client.sendPOSI(values, 0)
-        # Desactivar control de path, superficies y piloto automático
-        # Es código de prueba lo
-        client.sendDREF("sim/operation/override/override_planepath", 0)
-        client.sendDREF("sim/operation/override/override_control_surfaces", 0)
-        client.sendDREF("sim/operation/override/override_autopilot", 0)
-
 
         time.sleep(2) # Esperar a que el simulador estabilice la posición
 
+        
         client.sendDREF("sim/cockpit2/controls/yoke_pitch_ratio", 0)
         client.sendDREF("sim/cockpit2/controls/yoke_roll_ratio", 0)
         client.sendDREF("sim/cockpit2/controls/yoke_heading_ratio", 0)
@@ -317,4 +322,3 @@ if __name__ == "__main__":
 
         controller = FlightController(client)
         controller.run()
-
