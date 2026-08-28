@@ -163856,3 +163856,71 @@ TimeoutError: timed out
 2026-06-05 14:44:10,838 - INFO - Posición inicial: Lat=-34.554073, Lon=-58.425011, Heading=133.7°
 2026-06-05 14:44:10,838 - INFO - Heading inicial requerido: 121.1°
 2026-06-05 14:44:10,838 - INFO - Heading actual de la aeronave: 133.7°
+2026-06-12 10:45:41,288 - INFO - Cargyamados 4 puntos de trayectoria
+2026-06-12 10:45:41,289 - INFO - Iniciando controlador de vuelo
+2026-06-12 10:45:41,289 - INFO - Obteniendo posición inicial de la aeronave...
+2026-06-12 10:45:41,291 - INFO - Posición inicial: Lat=-34.554073, Lon=-58.425011, Heading=360.0°
+2026-06-12 10:45:41,291 - INFO - Heading inicial requerido: 121.1°
+2026-06-12 10:45:41,291 - INFO - Heading actual de la aeronave: 360.0°
+2026-06-12 10:49:03,662 - ERROR - Error crítico: timed out
+Traceback (most recent call last):
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\Qualitytestguide407_27_8.py", line 279, in run
+    dref_values = self.client.getDREFs(self.datarefs)
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\XPlaneConnect\Python3\src\xpc\__init__.py", line 348, in getDREFs
+    buffer = self.readUDP()
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\XPlaneConnect\Python3\src\xpc\__init__.py", line 69, in readUDP
+    return self.socket.recv(16384)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+TimeoutError: timed out
+2026-06-12 10:49:03,666 - INFO - Conexión con X-Plane cerrada
+2026-06-12 10:50:03,401 - INFO - Cargyamados 4 puntos de trayectoria
+2026-06-12 10:50:03,401 - INFO - Iniciando controlador de vuelo
+2026-06-12 10:50:03,401 - INFO - Obteniendo posición inicial de la aeronave...
+2026-06-12 10:50:03,414 - INFO - Posición inicial: Lat=-34.554073, Lon=-58.425011, Heading=133.3°
+2026-06-12 10:50:03,414 - INFO - Heading inicial requerido: 121.1°
+2026-06-12 10:50:03,414 - INFO - Heading actual de la aeronave: 133.3°
+2026-06-12 10:50:22,963 - ERROR - Error crítico: timed out
+Traceback (most recent call last):
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\Qualitytestguide407_27_8.py", line 279, in run
+    dref_values = self.client.getDREFs(self.datarefs)
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\XPlaneConnect\Python3\src\xpc\__init__.py", line 348, in getDREFs
+    buffer = self.readUDP()
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\XPlaneConnect\Python3\src\xpc\__init__.py", line 69, in readUDP
+    return self.socket.recv(16384)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+TimeoutError: timed out
+2026-06-12 10:50:22,967 - INFO - Conexión con X-Plane cerrada
+2026-06-12 10:50:48,525 - INFO - Cargyamados 4 puntos de trayectoria
+2026-06-12 10:50:48,526 - INFO - Iniciando controlador de vuelo
+2026-06-12 10:50:48,526 - INFO - Obteniendo posición inicial de la aeronave...
+2026-06-12 10:50:48,532 - INFO - Posición inicial: Lat=-34.554073, Lon=-58.425011, Heading=0.0°
+2026-06-12 10:50:48,532 - INFO - Heading inicial requerido: 121.1°
+2026-06-12 10:50:48,532 - INFO - Heading actual de la aeronave: 0.0°
+2026-06-12 10:52:31,978 - ERROR - Error crítico: timed out
+Traceback (most recent call last):
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\Qualitytestguide407_27_8.py", line 279, in run
+    dref_values = self.client.getDREFs(self.datarefs)
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\XPlaneConnect\Python3\src\xpc\__init__.py", line 348, in getDREFs
+    buffer = self.readUDP()
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\XPlaneConnect\Python3\src\xpc\__init__.py", line 69, in readUDP
+    return self.socket.recv(16384)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+TimeoutError: timed out
+2026-06-12 10:52:31,983 - INFO - Conexión con X-Plane cerrada
+2026-06-12 11:19:54,247 - INFO - Cargyamados 4 puntos de trayectoria
+2026-06-12 11:19:54,247 - INFO - Iniciando controlador de vuelo
+2026-06-12 11:19:54,247 - INFO - Obteniendo posición inicial de la aeronave...
+2026-06-12 11:19:54,252 - INFO - Posición inicial: Lat=-34.553410, Lon=-58.422920, Heading=139.5°
+2026-06-12 11:19:54,252 - INFO - Heading inicial requerido: 125.2°
+2026-06-12 11:19:54,252 - INFO - Heading actual de la aeronave: 139.5°
+2026-06-12 11:28:55,205 - ERROR - Error crítico: timed out
+Traceback (most recent call last):
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\Qualitytestguide407_27_8.py", line 279, in run
+    dref_values = self.client.getDREFs(self.datarefs)
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\XPlaneConnect\Python3\src\xpc\__init__.py", line 348, in getDREFs
+    buffer = self.readUDP()
+  File "c:\Users\JasFly-Simu-Lidar\Desktop\Simuladores JASFLY\2026_Rocio\Simulador\XPlaneConnect\Python3\src\xpc\__init__.py", line 69, in readUDP
+    return self.socket.recv(16384)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+TimeoutError: timed out
+2026-06-12 11:28:55,209 - INFO - Conexión con X-Plane cerrada
